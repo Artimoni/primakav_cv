@@ -18,7 +18,7 @@ if parts > initial_parts:
 elif parts == initial_parts:
     print("Не порван")
 else:
-    print(f"Объединен на {parts} частей")
+    print(f"Провод {parts} уничтожен")
 plt.subplot(121)
 plt.imshow(result)
 plt.subplot(122)
