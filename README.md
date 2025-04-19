@@ -1,2 +1,2 @@
 # primakav_cv
-master
+For classroom and homework
