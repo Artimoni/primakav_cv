@@ -1,2 +1,2 @@
 # primakav_cv
-master
+All the homework is in the "master" branch
