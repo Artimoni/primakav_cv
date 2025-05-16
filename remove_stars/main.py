@@ -9,8 +9,10 @@ def get_neighbors(y, x):
 
 def check_neighbors(arr, y, x):
     for neighbor in get_neighbors(y, x):
-        if arr[y][x] <= arr[neighbor[0]][neighbor[1]]:
-            return False
+        ny, nx = neighbor
+        if 0 <= ny < arr.shape[0] and 0 <= nx < arr.shape[1]:
+            if arr[y][x] <= arr[ny][nx]:
+                return False
     return True
 
 def receive_all(sock, n):
@@ -21,6 +23,19 @@ def receive_all(sock, n):
             return
         data.extend(packet)
     return data
+
+def group_close_points(points, threshold=2):
+    groups = []
+    for p in points:
+        added = False
+        for group in groups:
+            if any(np.hypot(p[0] - gp[0], p[1] - gp[1]) <= threshold for gp in group):
+                group.append(p)
+                added = True
+                break
+        if not added:
+            groups.append([p])
+    return [group[0] for group in groups]#взятие первой точки из каждой группы
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as connection:
     connection.connect((server_ip, server_port))
@@ -35,9 +50,17 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as connection:
             for x in range(image.shape[1]):
                 if check_neighbors(image, y, x):
                     max_coords.append((y, x))
-        result = np.sqrt((max_coords[0][0] - max_coords[1][0])**2 + (max_coords[0][1] - max_coords[1][1])**2)
+
+        filtered_coords = group_close_points(max_coords)
+
+        if len(filtered_coords) < 2:
+            result = 0.0
+        else:
+            p1, p2 = filtered_coords[:2]
+            result = np.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
+
         connection.send(f"{round(result, 1)}".encode())
         print(connection.recv(20))
+
     connection.send(b"beat")
-    beat_msg = connection.recv(20)
-    print(beat_msg)
+    print(connection.recv(20))
