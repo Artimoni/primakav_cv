@@ -10,7 +10,7 @@ subscriber = ctx.socket(zmq.SUB)
 subscriber.setsockopt(zmq.SUBSCRIBE, b"")
 subscriber.connect(f"tcp://{address}:{port}")
 
-cv2.namedWindow("ClientWindow", cv2.WINDOW_GUI_NORMAL)
+cv2.namedWindow("Camera", cv2.WINDOW_GUI_NORMAL)
 frame_counter = 0
 
 struct_elem = cv2.getStructuringElement(cv2.MORPH_RECT, (10, 10))
@@ -21,9 +21,12 @@ while True:
     frame_counter += 1
 
     blurred_img = cv2.GaussianBlur(img, (7, 7), 0)
+
     hsv_img = cv2.cvtColor(blurred_img, cv2.COLOR_BGR2HSV)
     gray_img = cv2.cvtColor(hsv_img, cv2.COLOR_BGR2GRAY)
+    
     _, binary_img = cv2.threshold(gray_img, 90, 255, cv2.THRESH_BINARY)
+
     eroded_img = cv2.erode(binary_img, struct_elem, iterations=2)
 
     contours, _ = cv2.findContours(eroded_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -44,42 +47,11 @@ while True:
         else:
             count_circles += 1
 
-    cv2.putText(
-        img,
-        f"Frame: {frame_counter}",
-        (10, 60),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        0.7,
-        (255, 0, 0),
-        2,
-    )
-    cv2.putText(
-        img,
-        f"Objects: {total_objects}",
-        (10, 120),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        0.7,
-        (255, 0, 0),
-        2,
-    )
-    cv2.putText(
-        img,
-        f"Circles: {count_circles}",
-        (10, 180),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        0.7,
-        (255, 0, 0),
-        2,
-    )
-    cv2.putText(
-        img,
-        f"Rectangles: {count_rects}",
-        (10, 240),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        0.7,
-        (255, 0, 0),
-        2,
-    )
+    
+    cv2.putText(img, f"Frame: {frame_counter}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,)
+    cv2.putText(img, f"Objects: {total_objects}", (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,)
+    cv2.putText(img, f"Circles: {count_circles}", (10, 180), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,)
+    cv2.putText(img, f"Rectangles: {count_rects}", (10, 240), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,)
 
     cv2.imshow("ClientWindow", img)
     cv2.imshow("ContoursMask", eroded_img)
